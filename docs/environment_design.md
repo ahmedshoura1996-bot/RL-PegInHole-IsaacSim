@@ -4,17 +4,26 @@
 - Franka Panda (7-DOF)
 
 ## Task
-- Insert a cylindrical peg into a cylindrical hole.
+The robot must insert a cylindrical peg into a hole using Cartesian control.
+
+---
 
 ## Observation Space
-- Joint positions
-- Joint velocities
-- End-effector position
-- End-effector orientation
-- Peg position
-- Hole position
 
+| Component | Dimension |
+|-----------|-----------|
+| Joint Positions | 7 |
+| Joint Velocities | 7 |
+| End-Effector Position | 3 |
+| Relative Peg-to-Hole Position | 3 |
+
+Total Observation Dimension = **20**
+
+---
 ## Action Space
+
+Cartesian Control: 
+
 - ΔX
 - ΔY
 - ΔZ
@@ -22,15 +31,27 @@
 - ΔPitch
 - ΔYaw
 
-## Reward
-- Distance reward
-- Alignment reward
-- Insertion reward
-- Success bonus
+Total Action Dimension = **6**
 
-## Success Condition
+---
+
+## Episode Termination
+
+### Success Condition
 - Peg fully inserted into the hole.
 
-## Failure Condition
+### Failure Condition
 - Maximum episode length reached.
-- Robot exceeds workspace limits.
+- Robot leaves workspace.
+- Unsafe collision
+
+---
+### Reward components
+- Distance Reward
+- Alignment Reward
+- Insertion Reward
+- Time Penalty
+- Collision Penalty
+- Success Bonus
+
+---
