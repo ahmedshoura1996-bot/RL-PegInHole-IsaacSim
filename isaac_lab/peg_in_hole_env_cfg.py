@@ -73,7 +73,7 @@ class PegInHoleEnvCfg(FrankaIKLiftEnvCfg):
         # ====================================================================
 
         self.scene.object = RigidObjectCfg(
-            prim_path="{ENV_REGEX_NS}/Peg",
+            prim_path="{ENV_REGEX_NS}/Object",
             init_state=RigidObjectCfg.InitialStateCfg(
                 pos=(0.5, 0.0, PEG_HEIGHT / 2.0),
                 rot=(1.0, 0.0, 0.0, 0.0),
