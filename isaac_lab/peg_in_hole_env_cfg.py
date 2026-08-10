@@ -1,18 +1,19 @@
 """
 Peg-in-Hole Environment Configuration
 
-First milestone:
-Franka Panda + IK Absolute + Cylindrical Peg.
+Milestone 2:
+Franka Panda + IK Absolute + Cylindrical Peg + Hole Fixture.
 
-This configuration is intentionally kept small for the first
-Isaac Lab smoke test. Hole geometry, observations, rewards,
-contact sensing, and termination logic will be added in later
-milestones.
+The hole is represented as a real empty opening using four rigid
+cuboid bodies around the hole.
 """
 
 from isaaclab.assets import RigidObjectCfg
-from isaaclab.sim.spawners.shapes.shapes_cfg import CylinderCfg
-from isaaclab.sim.schemas.schemas_cfg import RigidBodyPropertiesCfg, CollisionPropertiesCfg
+from isaaclab.sim.spawners.shapes.shapes_cfg import CylinderCfg, CuboidCfg
+from isaaclab.sim.schemas.schemas_cfg import (
+    RigidBodyPropertiesCfg,
+    CollisionPropertiesCfg,
+)
 from isaaclab.utils import configclass
 
 from isaaclab_tasks.manager_based.manipulation.lift.config.franka.ik_abs_env_cfg import (
@@ -20,34 +21,191 @@ from isaaclab_tasks.manager_based.manipulation.lift.config.franka.ik_abs_env_cfg
 )
 
 
-# ---------------------------------------------------------------------------
-# Temporary geometry parameters for the first smoke test.
-# These are NOT the final experimental dimensions.
-# ---------------------------------------------------------------------------
+# ============================================================================
+# PEG DIMENSIONS
+# ============================================================================
 
-TEST_PEG_RADIUS = 0.01   # 10 mm radius -> 20 mm diameter
-TEST_PEG_HEIGHT = 0.05   # 50 mm
+PEG_RADIUS = 0.010       # 10 mm
+PEG_HEIGHT = 0.050      # 50 mm
+
+
+# ==============================================================================
+# HOLE / FIXTURE DIMENSIONS
+# ============================================================================
+
+HOLE_RADIUS = 0.0105    # 10.5 mm -> 21 mm diameter
+
+FIXTURE_WIDTH = 0.080   # 80 mm
+FIXTURE_DEPTH = 0.080   # 80 mm
+FIXTURE_HEIGHT = 0.020  # 20 mm
+
+
+# ============================================================================
+# FIXTURE LAYOUT
+# ============================================================================
+
+# Width of material on each side of the hole.
+FIXTURE_HALF_SIZE = FIXTURE_WIDTH / 2.0
+
+# Outer half-size of the square fixture.
+OUTER_HALF = FIXTURE_WIDTH / 2.0
+
+# Hole diameter.
+HOLE_DIAMETER = 2.0 * HOLE_RADIUS
+
+# Width of the left/right material sections.
+SIDE_WIDTH = OUTER_HALF - HOLE_RADIUS
+
+# Height of the top/bottom sections.
+CENTER_SECTION_WIDTH = HOLE_DIAMETER
+
+
 @configclass
 class PegInHoleEnvCfg(FrankaIKLiftEnvCfg):
-    """First Peg-in-Hole environment milestone."""
+    """Milestone 2 Peg-in-Hole environment."""
 
     def __post_init__(self):
-        # Initialize the official Franka IK-Absolute Lift configuration.
+        # Initialize official Franka IK-Absolute Lift configuration.
         super().__post_init__()
 
-        # Replace the cube with a simple cylindrical rigid peg.
+        # ====================================================================
+        # PEG
+        # ====================================================================
+
         self.scene.object = RigidObjectCfg(
-            prim_path="{ENV_REGEX_NS}/Object",
+            prim_path="{ENV_REGEX_NS}/Peg",
             init_state=RigidObjectCfg.InitialStateCfg(
-                pos=(0.5, 0.0, TEST_PEG_HEIGHT / 2.0),
+                pos=(0.5, 0.0, PEG_HEIGHT / 2.0),
                 rot=(1.0, 0.0, 0.0, 0.0),
             ),
             spawn=CylinderCfg(
-                radius=TEST_PEG_RADIUS,
-                height=TEST_PEG_HEIGHT,
+                radius=PEG_RADIUS,
+                height=PEG_HEIGHT,
                 axis="Z",
                 rigid_props=RigidBodyPropertiesCfg(
                     disable_gravity=False,
+                ),
+                collision_props=CollisionPropertiesCfg(
+                    collision_enabled=True,
+                ),
+            ),
+        )
+
+        # ====================================================================
+        # FIXTURE - LEFT
+        # ======================================# ====================================================================
+
+        self.scene.fixture_left = RigidObjectCfg(
+            prim_path="{ENV_REGEX_NS}/FixtureLeft",
+            init_state=RigidObjectCfg.InitialStateCfg(
+                pos=(
+                    0.5 - (HOLE_RADIUS + SIDE_WIDTH / 2.0),
+                    0.0,
+                    FIXTURE_HEIGHT / 2.0,
+                ),
+            ),
+            spawn=CuboidCfg(
+                size=(
+                    SIDE_WIDTH,
+                    FIXTURE_DEPTH,
+                    FIXTURE_HEIGHT,
+                ),
+                rigid_props=RigidBodyPropertiesCfg(
+                    disable_gravity=True,
+                    kinematic_enabled=True,
+                ),
+                collision_props=CollisionPropertiesCfg(
+                    collision_enabled=True,
+                ),
+            ),
+        )
+
+        # ====================================================================
+        # FIXTURE - RIGHT
+ # ====================================================================
+
+        self.scene.fixture_right = RigidObjectCfg(
+            prim_path="{ENV_REGEX_NS}/FixtureRight",
+            init_state=RigidObjectCfg.InitialStateCfg(
+                pos=(
+                    0.5 + (HOLE_RADIUS + SIDE_WIDTH / 2.0),
+                    0.0,
+                    FIXTURE_HEIGHT / 2.0,
+                ),
+            ),
+            spawn=CuboidCfg(
+                size=(
+                    SIDE_WIDTH,
+                    FIXTURE_DEPTH,
+                    FIXTURE_HEIGHT,
+                ),
+                rigid_props=RigidBodyPropertiesCfg(
+                    disable_gravity=True,
+                    kinematic_enabled=True,
+                ),
+                collision_props=CollisionPropertiesCfg(
+                    collision_enabled=True,
+                ),
+            ),
+        )
+
+ # ====================================================================
+        # FIXTURE - FRONT
+        # ====================================================================
+
+        self.scene.fixture_front = RigidObjectCfg(
+            prim_path="{ENV_REGEX_NS}/FixtureFront",
+            init_state=RigidObjectCfg.InitialStateCfg(
+                pos=(
+                    0.5,
+                    -(
+                        HOLE_RADIUS
+                        + CENTER_SECTION_WIDTH / 2.0
+                    ),
+                    FIXTURE_HEIGHT / 2.0,
+                ),
+            ),
+            spawn=CuboidCfg(
+                size=(
+                    HOLE_DIAMETER,
+                    SIDE_WIDTH,
+                    FIXTURE_HEIGHT,
+                ),
+                rigid_props=RigidBodyPropertiesCfg(
+                    disable_gravity=True,
+                    kinematic_enabled=True,
+                ),
+                collision_props=CollisionPropertiesCfg(
+                    collision_enabled=True,
+                ),
+            ),
+        )
+
+        # ====================================================================
+        # FIXTURE - BACK
+        # ====================================================================
+
+        self.scene.fixture_back = RigidObjectCfg(
+            prim_path="{ENV_REGEX_NS}/FixtureBack",
+            init_state=RigidObjectCfg.InitialStateCfg(
+                pos=(
+                    0.5,
+                    (
+                        HOLE_RADIUS
+                        + CENTER_SECTION_WIDTH / 2.0
+                    ),
+                    FIXTURE_HEIGHT / 2.0,
+                ),
+            ),
+            spawn=CuboidCfg(
+                size=(
+                    HOLE_DIAMETER,
+                    SIDE_WIDTH,
+                    FIXTURE_HEIGHT,
+                ),
+                rigid_props=RigidBodyPropertiesCfg(
+                    disable_gravity=True,
+                    kinematic_enabled=True,
                 ),
                 collision_props=CollisionPropertiesCfg(
                     collision_enabled=True,
