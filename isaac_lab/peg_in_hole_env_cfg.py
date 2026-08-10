@@ -160,7 +160,7 @@ class PegInHoleEnvCfg(FrankaIKLiftEnvCfg):
                     0.5,
                     -(
                         HOLE_RADIUS
-                        + CENTER_SECTION_WIDTH / 2.0
+                        + SIDE_WIDTH / 2.0
                     ),
                     FIXTURE_HEIGHT / 2.0,
                 ),
@@ -192,7 +192,7 @@ class PegInHoleEnvCfg(FrankaIKLiftEnvCfg):
                     0.5,
                     (
                         HOLE_RADIUS
-                        + CENTER_SECTION_WIDTH / 2.0
+                        + SIDE_WIDTH / 2.0
                     ),
                     FIXTURE_HEIGHT / 2.0,
                 ),
