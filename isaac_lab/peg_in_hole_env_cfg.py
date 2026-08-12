@@ -40,7 +40,7 @@ HOLE_RADIUS = 0.0105    # 10.5 mm -> 21 mm diameter
 
 FIXTURE_WIDTH = 0.080   # 80 mm
 FIXTURE_DEPTH = 0.080   # 80 mm
-FIXTURE_HEIGHT = 0.020  # 20 mm
+FIXTURE_HEIGHT = 0.005  # 5 mm
 
 
 # ============================================================================
