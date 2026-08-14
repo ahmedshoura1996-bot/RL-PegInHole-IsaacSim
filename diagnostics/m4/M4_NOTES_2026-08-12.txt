@@ -1,0 +1,100 @@
+M4.1 IK DIAGNOSTIC — STATUS: COMPLETED
+
+Environment:
+- Isaac Sim 5.1
+- Isaac Lab
+- GPU: NVIDIA A40
+- Device: cuda:0
+- Robot: Franka Panda
+
+Robot:
+- Bodies: 11
+- Joints: 9
+- EE body: panda_hand
+- EE index: 8
+- Arm joints: panda_joint1 ... panda_joint7
+
+IK Configuration:
+- Controller: DifferentialIKController
+- command_type: pose
+- use_relative_mode: False
+- ik_method: dls
+- lambda_val: 0.01
+- body_offset: [0, 0, 0.107]
+
+M4.1.1 RESULT:
+- HOLD using panda_hand WORLD pose produced significant drift.
+- The diagnostic used the wrong frame representation.
+- IK itself was not identified as faulty.
+
+M4.1.2 RESULT:
+- Correct IK frame identified.
+- IK frame is computed from panda_hand + configured body offset.
+- HOLD command works correctly.
+
+Initial IK frame:
+- X = 0.2259
+- Y = 0.1179
+- Z = 0.5762
+
+After 50 steps:
+- X = 0.225938
+- Y = 0.117930
+- Z = 0.576156
+
+Approximate final position error:
+- Less than 0.1 mm.
+
+IMPORTANT:
+The Differential IK action expects the target in the robot root frame,
+including the configured body offset.
+It should NOT be fed directly with panda_hand world coordinates.
+
+NEXT STEP:
+M4.1.3 = Cartesian +Z 10 mm test.
+
+If M4.1.3 succeeds:
+- Move from diagnostic/headless testing to visual Isaac Sim simulation.
+- Run Isaac Sim without headless=True.
+- Visually observe the Franka motion toward Cartesian targets.
+- Begin building the visual Peg-in-Hole simulation environment.
+
+M4.1.3 RESULT — PASSED
+
+Test:
+- Cartesian +Z motion
+- Requested displacement: +10 mm
+
+Initial IK Z:
+- 0.576159 m
+
+Target IK Z:
+- 0.586159 m
+
+Final IK Z:
+- 0.586147 m
+
+Actual displacement:
+- 0.009989 m
+- 9.989 mm
+
+Position error:
+- -0.000011 m
+- -0.011 mm
+
+RESULT:
+- PASS
+- Cartesian +Z 10 mm motion successfully reached the target within ±1 mm.
+
+Conclusion:
+- Differential IK Cartesian position control is functioning correctly.
+- Correct IK frame and body offset handling are validated.
+- Ready to move from headless diagnostic testing to visual Isaac Sim testing.
+
+NEXT MILESTONE:
+M4.2 — First Visual Simulation
+- Disable headless mode.
+- Display Franka Panda in Isaac Sim.
+- Display/visualize Cartesian target.
+- Command the robot to move toward the target.
+- Capture visual evidence of successful motion.

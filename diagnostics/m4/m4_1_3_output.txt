@@ -1,0 +1,223 @@
+[3gH    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H  [INFO] Using python from: /workspace/isaaclab/_isaac_sim/python.sh
+[INFO][AppLauncher]: Using device: cuda:0
+[INFO][AppLauncher]: Loading experience file: /workspace/isaaclab/apps/isaaclab.python.headless.kit
+
+========================================
+       M4.1.3 CARTESIAN Z MOTION
+========================================
+
+[36m======================================================================================[0m
+[36m[1m[INFO][IsaacLab]: Logging to file: /tmp/isaaclab/logs/isaaclab_2026-08-13_07-12-27.log[0m
+[36m======================================================================================[0m
+
+[33m07:12:27 [simulation_context.py] WARNING: The `enable_external_forces_every_iteration` parameter in the PhysxCfg is set to False. If you are experiencing noisy velocities, consider enabling this flag. You may need to slightly increase the number of velocity iterations (setting it to 1 or 2 rather than 0), together with this flag, to improve the accuracy of velocity updates.[0m
+[INFO]: Base environment:
+	Environment device    : cuda:0
+	Environment seed      : None
+	Physics step-size     : 0.01
+	Rendering step-size   : 0.02
+	Environment step-size : 0.02
+[INFO]: Time taken for scene creation : 2.108892 seconds
+[INFO]: Scene manager:  <class InteractiveScene>
+	Number of environments: 1
+	Environment spacing   : 2.0
+	Source prim name      : /World/envs/env_0
+	Global prim paths     : []
+	Replicate physics     : True
+[INFO]: Starting the simulation. This may take a few seconds. Please wait...
+[INFO]: Time taken for simulation start : 0.697378 seconds
+[INFO] Command Manager:  <CommandManager> contains 1 active terms.
++------------------------------------------+
+|           Active Command Terms           |
++-------+-------------+--------------------+
+| Index | Name        |        Type        |
++-------+-------------+--------------------+
+|   0   | object_pose | UniformPoseCommand |
++-------+-------------+--------------------+
+
+[INFO] Event Manager:  <EventManager> contains 1 active terms.
++--------------------------------------+
+| Active Event Terms in Mode: 'reset'  |
++---------+----------------------------+
+|  Index  | Name                       |
++---------+----------------------------+
+|    0    | reset_all                  |
+|    1    | reset_object_position      |
++---------+----------------------------+
+
+[INFO] Recorder Manager:  <RecorderManager> contains 0 active terms.
++---------------------+
+| Active Recorder Terms |
++-----------+---------+
+|   Index   | Name    |
++-----------+---------+
++-----------+---------+
+
+[INFO] Action Manager:  <ActionManager> contains 2 active terms.
++------------------------------------+
+|   Active Action Terms (shape: 8)   |
++-------+----------------+-----------+
+| Index | Name           | Dimension |
++-------+----------------+-----------+
+|   0   | arm_action     |         7 |
+|   1   | gripper_action |         1 |
++-------+----------------+-----------+
+
+[INFO] Observation Manager: <ObservationManager> contains 1 groups.
++-----------------------------------------------------------+
+| Active Observation Terms in Group: 'policy' (shape: (36,)) |
++----------+-------------------------------------+----------+
+|  Index   | Name                                |  Shape   |
++----------+-------------------------------------+----------+
+|    0     | joint_pos                           |   (9,)   |
+|    1     | joint_vel                           |   (9,)   |
+|    2     | object_position                     |   (3,)   |
+|    3     | target_object_position              |   (7,)   |
+|    4     | actions                             |   (8,)   |
++----------+-------------------------------------+----------+
+
+[INFO] Termination Manager:  <TerminationManager> contains 2 active terms.
++------------------------------------+
+|      Active Termination Terms      |
++-------+-----------------+----------+
+| Index | Name            | Time Out |
++-------+-----------------+----------+
+|   0   | time_out        |   True   |
+|   1   | object_dropping |  False   |
++-------+-----------------+----------+
+
+[INFO] Reward Manager:  <RewardManager> contains 6 active terms.
++-----------------------------------------------------+
+|                 Active Reward Terms                 |
++-------+-----------------------------------+---------+
+| Index | Name                              |  Weight |
++-------+-----------------------------------+---------+
+|   0   | reaching_object                   |     1.0 |
+|   1   | lifting_object                    |    15.0 |
+|   2   | object_goal_tracking              |    16.0 |
+|   3   | object_goal_tracking_fine_grained |     5.0 |
+|   4   | action_rate                       | -0.0001 |
+|   5   | joint_vel                         | -0.0001 |
++-------+-----------------------------------+---------+
+
+[INFO] Curriculum Manager:  <CurriculumManager> contains 2 active terms.
++--------------------------+
+| Active Curriculum Terms  |
++---------+----------------+
+|  Index  | Name           |
++---------+----------------+
+|    0    | action_rate    |
+|    1    | joint_vel      |
++---------+----------------+
+
+[INFO]: Completed setting up the environment...
+
+IK ACTION CONFIG
+----------------------------------------
+Body name: panda_hand
+Body index: 8
+Joint names: ['panda_joint1', 'panda_joint2', 'panda_joint3', 'panda_joint4', 'panda_joint5', 'panda_joint6', 'panda_joint7']
+Joint IDs: [0, 1, 2, 3, 4, 5, 6]
+Scale: tensor([1., 1., 1., 1., 1., 1., 1.], device='cuda:0')
+Offset pos: tensor([0.0000, 0.0000, 0.1070], device='cuda:0')
+Offset rot: tensor([1., 0., 0., 0.], device='cuda:0')
+Controller: DifferentialIKControllerCfg(class_type=<class 'isaaclab.controllers.differential_ik.DifferentialIKController'>, command_type='pose', use_relative_mode=False, ik_method='dls', ik_params={'lambda_val': 0.01})
+
+PANDA HAND WORLD
+----------------------------------------
+Position: tensor([0.1235, 0.0931, 0.5946], device='cuda:0')
+Quaternion: tensor([-0.0461,  0.7550,  0.1269,  0.6416], device='cuda:0')
+
+IK FRAME IN ROBOT ROOT FRAME
+----------------------------------------
+Position: tensor([0.2259, 0.1179, 0.5762], device='cuda:0')
+Quaternion: tensor([-0.0461,  0.7550,  0.1269,  0.6416], device='cuda:0')
+
+ROBOT ROOT
+----------------------------------------
+Root position: tensor([ 5.5879e-09,  2.3283e-10, -3.7253e-09], device='cuda:0')
+Root quaternion: tensor([ 1.0000e+00, -1.4891e-10, -8.7813e-10, -8.4725e-11], device='cuda:0')
+
+JACOBIAN
+----------------------------------------
+Shape: torch.Size([1, 6, 7])
+Linear Jacobian:
+tensor([[-9.9791e-02,  3.4776e-01, -8.7907e-02, -3.6584e-01,  3.8451e-02,
+         -1.6996e-01,  2.5059e-02],
+        [ 1.4617e-01,  1.0895e-01,  3.1348e-01,  1.6596e-02, -1.2068e-01,
+         -1.9824e-02, -1.0234e-01],
+        [ 4.4148e-08, -1.6932e-01, -5.0582e-02,  4.8051e-01,  5.4913e-03,
+          1.4197e-01,  1.1891e-03]], device='cuda:0')
+Angular Jacobian:
+tensor([[ 3.8573e-07, -2.9896e-01, -9.3673e-01,  2.4984e-01,  9.1735e-01,
+          2.6285e-01,  9.5723e-01],
+        [-4.1238e-08,  9.5426e-01, -2.9347e-01, -9.4231e-01,  3.0398e-01,
+         -9.4744e-01,  2.3240e-01],
+        [ 1.0000e+00,  4.0698e-08, -1.9082e-01,  2.2276e-01,  2.5703e-01,
+          1.8238e-01, -1.7233e-01]], device='cuda:0')
+
+ACTION DIMENSION
+----------------------------------------
+Action: tensor([0., 0., 0., 0., 0., 0., 0., 0.], device='cuda:0')
+Shape: torch.Size([1, 8])
+
++Z 10 MM COMMAND
+----------------------------------------
+Initial IK Z = 0.576159 m
+Target IK Z  = 0.586159 m
+Requested ΔZ = 0.010000 m
+tensor([ 0.2259,  0.1179,  0.5862, -0.0461,  0.7550,  0.1269,  0.6416,  0.0000],
+       device='cuda:0')
+STEP 001 | HAND X=0.122755 Y=0.095245 Z=0.594324 | IK X=0.224937 Y=0.120939 Z=0.575675 | ΔZ=-0.000484
+STEP 002 | HAND X=0.122860 Y=0.095040 Z=0.595240 | IK X=0.225049 Y=0.120706 Z=0.576592 | ΔZ=0.000434
+STEP 005 | HAND X=0.123085 Y=0.094485 Z=0.597777 | IK X=0.225336 Y=0.119945 Z=0.579189 | ΔZ=0.003031
+STEP 010 | HAND X=0.123297 Y=0.093879 Z=0.600585 | IK X=0.225619 Y=0.119103 Z=0.582067 | ΔZ=0.005908
+STEP 025 | HAND X=0.123488 Y=0.093203 Z=0.603778 | IK X=0.225891 Y=0.118149 Z=0.585329 | ΔZ=0.009170
+STEP 050 | HAND X=0.123518 Y=0.093059 Z=0.604539 | IK X=0.225940 Y=0.117931 Z=0.586099 | ΔZ=0.009940
+STEP 075 | HAND X=0.123523 Y=0.093050 Z=0.604586 | IK X=0.225946 Y=0.117917 Z=0.586147 | ΔZ=0.009989
+STEP 100 | HAND X=0.123523 Y=0.093049 Z=0.604586 | IK X=0.225947 Y=0.117916 Z=0.586147 | ΔZ=0.009989
+
+FINAL RESULT
+----------------------------------------
+Initial IK Z : 0.576159 m
+Target IK Z  : 0.586159 m
+Final IK Z   : 0.586147 m
+Actual ΔZ    : 0.009989 m
+Error        : -0.000011 m
+RESULT: PASS — Cartesian +Z 10 mm motion succeeded.
+
+========================================
+       FRAME CHECK COMPLETE
+========================================
+[Info] [carb] Logging to file: /isaac-sim/kit/logs/Kit/Isaac-Sim/5.1/kit_20260813_071213.log
+2026-08-13T07:12:14Z [1,048ms] [Warning] [omni.usd_config.extension] Enable omni.materialx.libs extension to use MaterialX
+2026-08-13T07:12:14Z [1,108ms] [Warning] [omni.platforminfo.plugin] failed to open the default display.  Can't verify X Server version.
+2026-08-13T07:12:15Z [2,182ms] [Warning] [carb] Acquiring non optional plugin interface which is not listed as dependency: [omni::physx::IPhysxBenchmarks v1.0] (plugin: <default plugin>), by client: omni.physics.physx.plugin. Add it to CARB_PLUGIN_IMPL_DEPS() macro of a client.
+2026-08-13T07:12:16Z [2,763ms] [Warning] [omni.isaac.dynamic_control] omni.isaac.dynamic_control is deprecated as of Isaac Sim 4.5. No action is needed from end-users.
+
+|---------------------------------------------------------------------------------------------|
+| Driver Version: 580.159.04    | Graphics API: Vulkan
+|=============================================================================================|
+| GPU | Name                             | Active | LDA | GPU Memory | Vendor-ID | LUID       |
+|     |                                  |        |     |            | Device-ID | UUID       |
+|     |                                  |        |     |            | Bus-ID    |            |
+|---------------------------------------------------------------------------------------------|
+| 0   | NVIDIA A40                       | Yes: 0 |     | 46068   MB | 10de      | 0          |
+|     |                                  |        |     |            | 2235      | b17d1471.. |
+|     |                                  |        |     |            | d2        |            |
+|=============================================================================================|
+| OS: 24.04.2 LTS (Noble Numbat) ubuntu, Version: 24.04.2, Kernel: 6.8.0-124-generic
+| Processor: Intel(R) Xeon(R) Gold 6342 CPU @ 2.80GHz
+| Bare Metal Cores: 48 | Bare Metal Logical Cores: 96
+| Core Usage Quota: 7.65
+|---------------------------------------------------------------------------------------------|
+| Total Memory (MB): 47683 | Free Memory: 46937
+| Total Page/Swap (MB): 0 | Free Page/Swap: 0
+|---------------------------------------------------------------------------------------------|
+2026-08-13T07:12:27Z [13,947ms] [Warning] [gpu.foundation.plugin] ECC is enabled on physical device 0
+2026-08-13T07:12:27Z [13,952ms] [Warning] [gpu.foundation.plugin] IOMMU is enabled.
+2026-08-13T07:12:27Z [14,454ms] [Warning] [isaaclab.envs.manager_based_env] Seed not set for the environment. The environment creation may not be deterministic.
+2026-08-13T07:12:32Z [18,600ms] [Warning] [omni.physx.fabric.plugin] FabricManager::initializePointInstancer mismatched prototypes on point instancer: /Visuals/Command/goal_pose.
+2026-08-13T07:12:32Z [18,600ms] [Warning] [omni.physx.fabric.plugin] FabricManager::initializePointInstancer mismatched prototypes on point instancer: /Visuals/Command/body_pose.
+2026-08-13T07:12:36Z [22,665ms] [Warning] [omni.physx.plugin] USD stage detach not called, holding a loose ptr to a stage!
+2026-08-13T07:12:36Z [23,102ms] [Warning] [carb] Recursive unloadAllPlugins() detected!
