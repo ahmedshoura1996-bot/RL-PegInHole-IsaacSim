@@ -106,24 +106,85 @@ target_action[0, 7] = 0.0
 print("")
 print("Creating Isaac Sim camera...")
 
+camera_position = np.array([1.0, -1.0, 0.85], dtype=np.float64)
+
+# Aim the camera directly at the current robot end-effector pose.
+camera_target = ik_pos_b[0, :3].detach().cpu().numpy().astype(np.float64)
+
+print("Camera position:", camera_position)
+print("Camera target  :", camera_target)
+
+# Camera convention:
+#   +X = right
+#   +Y = up
+#   -Z = viewing direction
+#
+# Construct a world rotation whose -Z axis points toward the target.
+
+forward = camera_target - camera_position
+forward_norm = np.linalg.norm(forward)
+
+if forward_norm < 1e-8:
+    raise RuntimeError("Camera target is too close to camera position.")
+
+forward = forward / forward_norm
+
+world_up = np.array([0.0, 0.0, 1.0], dtype=np.float64)
+
+# Right vector
+right = np.cross(forward, world_up)
+
+if np.linalg.norm(right) < 1e-8:
+    world_up = np.array([0.0, 1.0, 0.0], dtype=np.float64)
+    right = np.cross(forward, world_up)
+
+right = right / np.linalg.norm(right)
+
+# Correct orthogonal up vector
+up = np.cross(right, forward)
+up = up / np.linalg.norm(up)
+
+# Camera local axes expressed in world coordinates:
+# local X -> right
+# local Y -> up
+# local Z -> -forward
+rotation_matrix = np.column_stack(
+    (right, up, -forward)
+)
+
+from scipy.spatial.transform import Rotation
+
+rot = Rotation.from_matrix(rotation_matrix)
+
+# scipy returns quaternion as [x, y, z, w]
+qx, qy, qz, qw = rot.as_quat()
+
+# Isaac Sim expects [w, x, y, z]
+camera_orientation = np.array(
+    [qw, qx, qy, qz],
+    dtype=np.float64
+)
+
+print("Camera orientation [w,x,y,z]:", camera_orientation)
+
 camera = Camera(
     prim_path="/World/M4_2_EvidenceCamera",
-    position=np.array([1.0, -1.0, 0.85]),
+    position=camera_position,
     resolution=(1280, 720),
     frequency=50,
 )
 
-camera.set_focal_length(24.0)
+camera.set_focal_length(28.0)
 
 camera.initialize()
 
-# Point camera toward workspace
 camera.set_world_pose(
-    position=np.array([1.0, -1.0, 0.85]),
-    orientation=None,
+    position=camera_position,
+    orientation=camera_orientation,
 )
 
 print("Camera initialized.")
+print("Camera is aimed at robot end-effector.")
 
 
 # ============================================================
@@ -133,10 +194,58 @@ print("Camera initialized.")
 print("")
 print("Warming up renderer...")
 
-for _ in range(10):
+for _ in range(30):
     simulation_app.update()
 
 print("Renderer ready.")
+
+
+# ============================================================
+# CAMERA VALIDATION
+# ============================================================
+
+print("")
+print("Validating camera image...")
+
+for attempt in range(10):
+
+    simulation_app.update()
+
+    test_image = camera.get_rgba()
+
+    if test_image is None:
+        print(f"Camera validation attempt {attempt + 1}: None")
+        continue
+
+    test_image = np.asarray(test_image)
+
+    if test_image.size == 0:
+        print(f"Camera validation attempt {attempt + 1}: EMPTY")
+        continue
+
+    rgb_test = test_image[:, :, :3].astype(np.float32)
+
+    mean_value = float(rgb_test.mean())
+    min_value = int(rgb_test.min())
+    max_value = int(rgb_test.max())
+
+    print(
+        f"Camera validation attempt {attempt + 1}: "
+        f"mean={mean_value:.2f}, "
+        f"min={min_value}, "
+        f"max={max_value}"
+    )
+
+    # Reject completely black/white frames.
+    if max_value > 10 and min_value < 250:
+        print("Camera image validation: PASS")
+        break
+
+else:
+    raise RuntimeError(
+        "Camera validation failed: "
+        "image appears empty or completely saturated."
+    )
 
 
 # ============================================================
