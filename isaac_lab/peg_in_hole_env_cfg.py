@@ -16,12 +16,15 @@ from isaaclab.sim.schemas.schemas_cfg import (
 )
 from isaaclab.utils import configclass
 from isaaclab.managers import EventTermCfg as EventTerm
+from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.managers import SceneEntityCfg
 import isaaclab_tasks.manager_based.manipulation.lift.mdp as mdp
 
 from isaaclab_tasks.manager_based.manipulation.lift.config.franka.ik_abs_env_cfg import (
     FrankaCubeLiftEnvCfg as FrankaIKLiftEnvCfg,
 )
+
+from isaac_lab.mdp.observations import peg_hole_relative_position
 
 
 # ============================================================================
@@ -70,6 +73,19 @@ class PegInHoleEnvCfg(FrankaIKLiftEnvCfg):
     def __post_init__(self):
         # Initialize official Franka IK-Absolute Lift configuration.
         super().__post_init__()
+
+        # ====================================================================
+        # M5.4 - PEG-IN-HOLE OBSERVATION
+        # ====================================================================
+
+        # Replace the generic lift object-position observation with the
+        # peg-hole relative position expressed in the robot root frame.
+        self.observations.policy.object_position = ObsTerm(
+            func=peg_hole_relative_position,
+            params={
+                "object_cfg": SceneEntityCfg("object"),
+            },
+        )
 
         # ====================================================================
         # PEG
