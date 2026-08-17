@@ -106,10 +106,14 @@ target_action[0, 7] = 0.0
 print("")
 print("Creating Isaac Sim camera...")
 
-camera_position = np.array([1.0, -1.0, 0.85], dtype=np.float64)
+# Fixed evidence camera for a clear 3/4 view of the robot,
+# peg, and hole/workspace.
+camera_position = np.array([1.45, -1.65, 1.10], dtype=np.float64)
 
-# Aim the camera directly at the current robot end-effector pose.
-camera_target = ik_pos_b[0, :3].detach().cpu().numpy().astype(np.float64)
+# Fixed target near the peg/hole interaction region.
+# Keeping this fixed makes the initial/final evidence frames
+# directly comparable.
+camera_target = np.array([0.20, 0.05, 0.45], dtype=np.float64)
 
 print("Camera position:", camera_position)
 print("Camera target  :", camera_target)
@@ -184,7 +188,7 @@ camera.set_world_pose(
 )
 
 print("Camera initialized.")
-print("Camera is aimed at robot end-effector.")
+print("Camera is aimed at the peg/hole interaction region.")
 
 
 # ============================================================
