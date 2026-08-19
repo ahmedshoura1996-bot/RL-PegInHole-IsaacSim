@@ -19,4 +19,7 @@ gym.register(
     id="Isaac-PegInHole-Franka-IK-Abs-v0",
     entry_point=make_peg_in_hole_env,
     disable_env_checker=True,
+    kwargs={
+        "rsl_rl_cfg_entry_point": "isaac_lab.agents.rsl_rl_ppo_cfg:PegInHolePPORunnerCfg",
+    },
 )
