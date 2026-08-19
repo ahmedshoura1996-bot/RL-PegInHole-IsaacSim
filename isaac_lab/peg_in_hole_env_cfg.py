@@ -17,6 +17,7 @@ from isaaclab.sim.schemas.schemas_cfg import (
 from isaaclab.utils import configclass
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import ObservationTermCfg as ObsTerm
+from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import SceneEntityCfg
 import isaaclab_tasks.manager_based.manipulation.lift.mdp as mdp
 
@@ -25,6 +26,10 @@ from isaaclab_tasks.manager_based.manipulation.lift.config.franka.ik_abs_env_cfg
 )
 
 from isaac_lab.mdp.observations import peg_hole_relative_position
+from isaac_lab.mdp.rewards import (
+    peg_hole_xy_alignment,
+    peg_insertion_progress,
+)
 
 
 # ============================================================================
@@ -73,6 +78,36 @@ class PegInHoleEnvCfg(FrankaIKLiftEnvCfg):
     def __post_init__(self):
         # Initialize official Franka IK-Absolute Lift configuration.
         super().__post_init__()
+
+        # ====================================================================
+        # M5.6 - PEG-IN-HOLE TASK-SPECIFIC REWARD
+        # ====================================================================
+
+        # Disable rewards inherited from the generic Lift task.
+        self.rewards.reaching_object = None
+        self.rewards.lifting_object = None
+        self.rewards.object_goal_tracking = None
+        self.rewards.object_goal_tracking_fine_grained = None
+
+        # XY alignment reward.
+        self.rewards.peg_hole_xy_alignment = RewTerm(
+            func=peg_hole_xy_alignment,
+            weight=0.5,
+            params={
+                "std": 0.01,
+                "object_cfg": SceneEntityCfg("object"),
+            },
+        )
+
+        # Vertical insertion progress reward.
+        self.rewards.peg_insertion_progress = RewTerm(
+            func=peg_insertion_progress,
+            weight=0.5,
+            params={
+                "initial_peg_z": PEG_HEIGHT / 2.0,
+                "target_insertion": 0.010,
+            },
+        )
 
         # ====================================================================
         # M5.4 - PEG-IN-HOLE OBSERVATION
