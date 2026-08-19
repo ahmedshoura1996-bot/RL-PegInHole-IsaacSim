@@ -33,3 +33,36 @@ def peg_hole_xy_alignment(
     xy_error = torch.norm(relative_pos[:, :2], dim=1)
 
     return 1.0 - torch.tanh(xy_error / std)
+
+def peg_insertion_progress(
+    env: ManagerBasedRLEnv,
+    initial_peg_z: float = 0.025,
+    target_insertion: float = 0.010,
+    object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
+) -> torch.Tensor:
+    """Reward downward insertion progress of the peg.
+
+    The reward measures how far the peg has moved downward from its
+    initial vertical position.
+
+    Reward:
+        0.0 -> no insertion
+        1.0 -> target insertion reached
+
+    Positive insertion progress is clipped to [0, 1].
+    Retraction therefore receives no positive insertion reward.
+    """
+    peg = env.scene[object_cfg.name]
+
+    # Peg position in the environment-local frame.
+    peg_z = (
+        peg.data.root_pos_w[:, 2]
+        - env.scene.env_origins[:, 2]
+    )
+
+    insertion = initial_peg_z - peg_z
+
+    progress = insertion / target_insertion
+
+    return torch.clamp(progress, min=0.0, max=1.0)
+
