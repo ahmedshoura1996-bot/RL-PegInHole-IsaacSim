@@ -1,0 +1,59 @@
+M5.9 - PPO End-to-End Smoke Test
+================================
+
+Environment:
+Isaac-PegInHole-Franka-IK-Abs-v0
+
+Training:
+Number of environments: 16
+PPO iterations: 10
+Total timesteps: 3840
+Training time: 13.71 s
+Device: cuda:0
+GPU: NVIDIA A40
+
+Network:
+Observation dimension: 36
+Action dimension: 8
+Actor MLP: 36 -> 256 -> 128 -> 64 -> 8
+Critic MLP: 36 -> 256 -> 128 -> 64 -> 1
+
+Results:
+Mean reward:
+  First: 0.1547748446
+  Last:  1.6020619869
+
+Mean episode length:
+  First: 12.0
+  Last:  124.125
+
+Peg-hole XY alignment:
+  First: 0.0129949823
+  Last:  0.4338185191
+
+Peg insertion progress:
+  First: 0.00389362196
+  Last:  0.1301910579
+
+Value function loss:
+  First: 0.00693867914
+  Last:  0.00115199282
+
+Object position error:
+  First: 0.139060408
+  Last:  0.539864242
+
+Object orientation error:
+  First: 1.66155469
+  Last:  2.31596446
+
+Object dropping:
+  First: 0.0
+  Last:  0.0
+
+Training pipeline status:
+PASS
+
+Note:
+This experiment validates the end-to-end PPO training pipeline.
+It does NOT establish that the Peg-in-Hole task has been solved.
