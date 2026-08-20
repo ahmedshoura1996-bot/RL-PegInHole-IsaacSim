@@ -49,11 +49,17 @@ parser.add_argument(
     choices={"wandb", "tensorboard", "neptune"},
 )
 parser.add_argument("--log_project_name", type=str, default=None)
+parser.add_argument("--distributed", action="store_true", default=False)
 
 # Isaac Lab / Isaac Sim arguments.
 AppLauncher.add_app_launcher_args(parser)
 
 args_cli, hydra_args = parser.parse_known_args()
+
+# Keep Hydra from parsing the script-specific CLI arguments.
+# hydra_task_config() calls hydra.main() using sys.argv.
+sys.argv = [sys.argv[0]] + hydra_args
+
 
 # ---------------------------------------------------------------------
 # Launch Isaac Sim FIRST.

@@ -1,0 +1,78 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+import torch
+
+from isaaclab.managers import SceneEntityCfg
+
+from .observations import peg_hole_relative_position
+
+if TYPE_CHECKING:
+    from isaaclab.envs import ManagerBasedRLEnv
+
+
+def peg_hole_xy_alignment(
+    env: ManagerBasedRLEnv,
+    std: float = 0.01,
+    object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
+) -> torch.Tensor:
+    """Reward XY alignment of the peg with the nominal hole center.
+
+    The reward is based only on the horizontal displacement between the
+    peg center and the nominal hole center, expressed in the robot root
+    frame.
+
+    A perfectly centered peg receives a reward of 1.0.
+    """
+    relative_pos = peg_hole_relative_position(
+        env,
+        object_cfg=object_cfg,
+    )
+
+    xy_error = torch.norm(relative_pos[:, :2], dim=1)
+
+    return 1.0 - torch.tanh(xy_error / std)
+
+def peg_insertion_progress(
+    env: ManagerBasedRLEnv,
+    initial_peg_z: float = 0.025,
+    target_insertion: float = 0.010,
+    object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
+) -> torch.Tensor:
+    """Reward downward insertion progress of the peg.
+
+    The reward measures how far the peg has moved downward from its
+    initial vertical position.
+
+    Reward:
+        0.0 -> no insertion
+        1.0 -> target insertion reached
+
+    Positive insertion progress is clipped to [0, 1].
+    Retraction therefore receives no positive insertion reward.
+    """
+    peg = env.scene[object_cfg.name]
+
+    # Peg position in the environment-local frame.
+    peg_z = (
+        peg.data.root_pos_w[:, 2]
+        - env.scene.env_origins[:, 2]
+    )
+
+    insertion = initial_peg_z - peg_z
+
+    progress = insertion / target_insertion
+
+    # M6.4 - denser insertion shaping.
+    # Preserve the original [0, 1] progress signal while adding
+    # a smooth exponential component that gives stronger feedback
+    # during the early insertion phase.
+    progress = torch.clamp(progress, min=0.0, max=1.0)
+
+    dense_progress = (
+        1.0 - torch.exp(-3.0 * progress)
+    ) / (1.0 - torch.exp(torch.tensor(-3.0, device=progress.device)))
+
+    return 0.5 * progress + 0.5 * dense_progress
+
