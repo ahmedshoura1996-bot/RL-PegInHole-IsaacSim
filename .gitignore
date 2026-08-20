@@ -232,3 +232,4 @@ runs/
 *.backup
 *.m4_1_3_backup
 isaac_lab/peg_in_hole_env_cfg.py.m3_3_backup
+outputs/
