@@ -80,6 +80,15 @@ class PegInHoleEnvCfg(FrankaIKLiftEnvCfg):
         super().__post_init__()
 
         # ====================================================================
+        # M6.1.1 - PHYSX GPU MEMORY STABILITY
+        # ====================================================================
+
+        # Increase GPU aggregate-pair capacity for the Peg-in-Hole scene.
+        # The inherited Lift configuration uses 16K, while M6.1 validation
+        # required up to 24K aggregate pairs.
+        self.sim.physx.gpu_total_aggregate_pairs_capacity = 32 * 1024
+
+        # ====================================================================
         # M5.6 - PEG-IN-HOLE TASK-SPECIFIC REWARD
         # ====================================================================
 
