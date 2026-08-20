@@ -1,0 +1,50 @@
+M6.0 - Peg-in-Hole Baseline Characterization
+=============================================
+
+Baseline commit:
+0bdaa161be207c203ab1dcdffa21b26f87dce1e2
+
+Environment:
+Isaac-PegInHole-Franka-IK-Abs-v0
+
+Ground Plane:
+  Prim path: /World/GroundPlane
+  Z position: -1.05 m
+  Source: inherited LiftEnvCfg
+
+Simulation:
+  dt: 0.01 s
+  Physics frequency: 100 Hz
+  Decimation: 2
+  Control timestep: 0.02 s
+  Episode length: 5.0 s
+
+Scene:
+  Default environments: 4096
+  Environment spacing: 2.5 m
+
+Peg:
+  Radius: 0.010 m
+  Diameter: 0.020 m
+  Height: 0.050 m
+
+Hole:
+  Radius: 0.0105 m
+  Diameter: 0.021 m
+
+Nominal clearance:
+  Radial: 0.0005 m
+  Diametral: 0.0010 m
+
+Fixture:
+  Width: 0.080 m
+  Depth: 0.080 m
+  Height: 0.005 m
+
+M6.0 status:
+  PASS
+
+Interpretation:
+  Baseline characterized successfully.
+  No environment modifications introduced.
+  Ready for M6.1 task-training/evaluation preparation.
