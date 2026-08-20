@@ -288,12 +288,9 @@ class PegInHoleEnvCfg(FrankaIKLiftEnvCfg):
             func=mdp.reset_root_state_uniform,
             mode="reset",
             params={
-                # M7.0 - Controlled XY initial misalignment.
-                # Randomize the peg start position by +/- 1 mm in X/Y
-                # while keeping the insertion height unchanged.
                 "pose_range": {
-                    "x": (-0.001, 0.001),
-                    "y": (-0.001, 0.001),
+                    "x": (0.0, 0.0),
+                    "y": (0.0, 0.0),
                     "z": (0.0, 0.0),
                 },
                 "velocity_range": {},
