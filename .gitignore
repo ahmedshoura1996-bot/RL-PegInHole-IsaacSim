@@ -233,3 +233,31 @@ runs/
 *.m4_1_3_backup
 isaac_lab/peg_in_hole_env_cfg.py.m3_3_backup
 outputs/
+
+# ============================================================
+# RL / Isaac Lab Training Artifacts
+# ============================================================
+
+# Training logs and checkpoints
+logs/
+*.pt
+*.pth
+*.ckpt
+
+# Compressed experiment archives
+*.tar
+*.tar.gz
+*.zip
+
+# TensorBoard event files
+events.out.tfevents.*
+
+# Temporary diagnostic / backup files
+*.bak
+*.bak2
+*.backup
+*.m4_1_3_backup
+
+# Python bytecode
+__pycache__/
+*.pyc

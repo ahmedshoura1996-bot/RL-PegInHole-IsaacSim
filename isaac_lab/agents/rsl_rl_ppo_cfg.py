@@ -13,7 +13,7 @@ class PegInHolePPORunnerCfg(RslRlOnPolicyRunnerCfg):
 
     num_steps_per_env = 24
     max_iterations = 2
-    save_interval = 1
+    save_interval = 500
 
     experiment_name = "peg_in_hole"
 
