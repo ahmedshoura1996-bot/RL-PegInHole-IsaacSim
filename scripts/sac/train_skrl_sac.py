@@ -80,7 +80,7 @@ from skrl.trainers.torch import SequentialTrainer
 
 ENV_ID = "Isaac-PegInHole-Franka-IK-Abs-v0"
 
-LOG_DIR = "./results/benchmark_v1/sac/validation_1200/logs"
+LOG_DIR = "./results/benchmark_v1/sac/benchmark_10k_squashed/logs"
 
 
 # =============================================================================
@@ -150,6 +150,40 @@ class Policy(GaussianMixin, Model):
         log_std = self.log_std_parameter.expand_as(mean)
 
         return mean, {"log_std": log_std}
+
+    def act(self, inputs, *, role=""):
+        # Squashed Gaussian policy for numerically stable SAC.
+        mean_actions, outputs = self.compute(inputs, role)
+        log_std = outputs["log_std"]
+
+        # Match GaussianMixin log-std bounds.
+        log_std = torch.clamp(log_std, min=-20, max=2)
+        outputs["log_std"] = log_std
+
+        std = torch.exp(log_std)
+        distribution = torch.distributions.Normal(mean_actions, std)
+
+         # Reparameterized Gaussian sample.
+        pre_tanh_actions = distribution.rsample()
+
+        # Bound actions to [-1, 1].
+        actions = torch.tanh(pre_tanh_actions)
+
+        # SAC log-probability with tanh Jacobian correction.
+        log_prob = distribution.log_prob(pre_tanh_actions)
+        log_prob = log_prob - torch.log(
+            1.0 - actions.pow(2) + 1e-6
+        )
+
+        log_prob = log_prob.sum(dim=-1, keepdim=True)
+
+        outputs["log_prob"] = log_prob
+        outputs["mean_actions"] = torch.tanh(mean_actions)
+
+        # Keep the current distribution available for SKRL.
+        self._g_distribution = distribution
+
+        return actions, outputs
 
 
 class Critic(DeterministicMixin, Model):
