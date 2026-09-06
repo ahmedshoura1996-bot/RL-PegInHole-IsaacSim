@@ -63,7 +63,7 @@ from skrl.trainers.torch import SequentialTrainer
 
 ENV_ID = "Isaac-PegInHole-Franka-IK-Abs-v0"
 
-LOG_DIR = "./results/benchmark_v1/ddpg/benchmark_10k/logs"
+LOG_DIR = "./results/benchmark_v1/ddpg/benchmark_10k_safe_noise/logs"
 
 
 # =============================================================================
@@ -156,6 +156,52 @@ class Critic(DeterministicMixin, Model):
         )
 
         return self.net(x), {}
+
+
+# =============================================================================
+# Safe DDPG exploration
+# =============================================================================
+
+class SafeDDPG(DDPG):
+
+    def __init__(self, *args, exploration_std=0.1, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.safe_exploration_std = exploration_std
+
+    def act(self, observations, states, *, timestep, timesteps):
+
+        inputs = {
+            "observations": self._observation_preprocessor(observations),
+             "states": self._state_preprocessor(states),
+        }
+
+        if timestep < self.cfg.random_timesteps:
+            return self.policy.random_act(inputs, role="policy")
+
+        with torch.autocast(
+            device_type=self._device_type,
+            enabled=self.cfg.mixed_precision,
+        ):
+            actions, outputs = self.policy.act(inputs, role="policy")
+
+        noise = torch.randn_like(actions) * self.safe_exploration_std
+        actions = actions + noise
+        actions = torch.clamp(actions, -1.0, 1.0)
+
+        self.track_data(
+            "Exploration / Safe noise (max)",
+            torch.max(noise).item(),
+        )
+        self.track_data(
+            "Exploration / Safe noise (min)",
+            torch.min(noise).item(),
+        )
+        self.track_data(
+            "Exploration / Safe noise (mean)",
+            torch.mean(noise).item(),
+        )
+
+        return actions, outputs
 
 
 # =============================================================================
@@ -263,17 +309,13 @@ def main():
 
         grad_norm_clip=1.0,
 
-        exploration_noise=GaussianNoise,
-        exploration_noise_kwargs={
-            "mean": 0.0,
-            "std": 0.1,
-        },
+        exploration_noise=None,
 
         experiment={
             "directory": LOG_DIR,
             "experiment_name": "peg_in_hole_ddpg",
             "write_interval": 10,
-            "checkpoint_interval": 0,
+            "checkpoint_interval": 1000,
         },
     )
 
@@ -281,7 +323,7 @@ def main():
     # DDPG agent
     # -------------------------------------------------------------------------
 
-    agent = DDPG(
+    agent = SafeDDPG(
         models=models,
         memory=memory,
         observation_space=env.observation_space,
