@@ -1,25 +1,122 @@
-from isaaclab.app import AppLauncher
-
 import argparse
 import os
+import torch
 
-parser = argparse.ArgumentParser(description="M9.3 DDPG checkpoint evaluation")
+from isaaclab.app import AppLauncher
+
+
+parser = argparse.ArgumentParser(
+    description="M9.3 DDPG checkpoint evaluation"
+)
+
 parser.add_argument("--num_envs", type=int, default=4096)
 parser.add_argument("--num_steps", type=int, default=250)
 parser.add_argument("--seed", type=int, default=42)
 parser.add_argument("--checkpoint", required=True)
+
 parser.add_argument(
     "--output",
-    default="results/benchmark_v1/ddpg/benchmark_10k_safe_noise/m9_eval.txt",
+    default=(
+        "results/benchmark_v1/ddpg/"
+        "benchmark_10k_safe_noise/m9_eval.txt"
+    ),
 )
+
 AppLauncher.add_app_launcher_args(parser)
+
 args = parser.parse_args()
+
+
+# ============================================================
+# DDPG policy
+# IMPORTANT: Must exactly match the training architecture.
+# 36 -> 256 -> 256 -> 256 -> 8
+# ============================================================
+
+class DDPGPolicy(torch.nn.Module):
+
+    def __init__(self, obs_dim, action_dim):
+        super().__init__()
+
+        self.net = torch.nn.Sequential(
+            torch.nn.Linear(obs_dim, 256),
+            torch.nn.ELU(),
+
+            torch.nn.Linear(256, 256),
+            torch.nn.ELU(),
+
+            torch.nn.Linear(256, 256),
+            torch.nn.ELU(),
+
+            torch.nn.Linear(256, action_dim),
+            torch.nn.Tanh(),
+        )
+
+    def forward(self, observations):
+        return self.net(observations)
+
+    def deterministic_action(self, observations):
+        return self.forward(observations)
+
+
+# ============================================================
+# CRITICAL:
+# Load policy BEFORE Isaac Sim starts.
+# ============================================================
+
+print("=" * 70, flush=True)
+print("DDPG M9.3 PRELOAD", flush=True)
+print("=" * 70, flush=True)
+print(f"Checkpoint : {args.checkpoint}", flush=True)
+
+print("Loading policy BEFORE Isaac Sim...", flush=True)
+
+if not os.path.isfile(args.checkpoint):
+    raise FileNotFoundError(
+        f"Checkpoint not found: {args.checkpoint}"
+    )
+
+policy_state = torch.load(
+    args.checkpoint,
+    map_location="cpu",
+    weights_only=True,
+)
+
+preloaded_policy = DDPGPolicy(
+    obs_dim=36,
+    action_dim=8,
+)
+
+preloaded_policy.load_state_dict(
+    policy_state,
+    strict=True,
+)
+
+preloaded_policy.eval()
+
+for name, tensor in preloaded_policy.state_dict().items():
+    if not torch.isfinite(tensor).all():
+        raise RuntimeError(
+            f"Non-finite policy tensor: {name}"
+        )
+
+print("Policy preload: PASS", flush=True)
+
+
+# ============================================================
+# NOW start Isaac Sim
+# ============================================================
 
 app_launcher = AppLauncher(args)
 simulation_app = app_launcher.app
 
+
+# ============================================================
+# IsaacLab imports AFTER AppLauncher
+# ============================================================
+
 import gymnasium as gym
-import torch
+
 import isaac_lab
 import isaaclab_tasks
 
@@ -30,27 +127,6 @@ from isaac_lab.mdp.observations import peg_hole_relative_position
 ENV_ID = "Isaac-PegInHole-Franka-IK-Abs-v0"
 XY_TOL = 0.0005
 INSERTION_TARGET = 0.010
-
-
-class DDPGPolicy(torch.nn.Module):
-
-    def __init__(self, obs_dim, action_dim):
-        super().__init__()
-
-        self.net = torch.nn.Sequential(
-            torch.nn.Linear(obs_dim, 256),
-            torch.nn.ELU(),
-            torch.nn.Linear(256, 256),
-            torch.nn.ELU(),
-            torch.nn.Linear(256, action_dim),
-            torch.nn.Tanh(),
-        )
-
-    def forward(self, observations):
-        return self.net(observations)
-
-    def deterministic_action(self, observations):
-        return self.forward(observations)
 
 
 def get_policy_obs(obs):
@@ -64,42 +140,9 @@ def get_policy_obs(obs):
             return obs["observations"]
 
     raise RuntimeError(
-         f"Unexpected observation structure: {type(obs)}"
+        f"Unexpected observation structure: {type(obs)}"
     )
 
-
-def load_policy(checkpoint_path, obs_dim, action_dim, device):
-
-    checkpoint = torch.load(
-        checkpoint_path,
-        map_location=device,
-        weights_only=False,
-    )
-
-    if "policy" not in checkpoint:
-        raise RuntimeError(
-            "Checkpoint does not contain policy"
-        )
-
-    policy = DDPGPolicy(
-        obs_dim,
-        action_dim,
-    ).to(device)
-
-    policy.load_state_dict(
-        checkpoint["policy"],
-        strict=True,
-    )
-
-    policy.eval()
-
-    for name, tensor in policy.state_dict().items():
-        if not torch.isfinite(tensor).all():
-             raise RuntimeError(
-                f"Non-finite policy tensor: {name}"
-            )
-
-    return policy
 
 
 def main():
@@ -107,7 +150,7 @@ def main():
     device = "cuda:0"
 
     print("=" * 70)
-    print("M9.2 SAC CHECKPOINT EVALUATION")
+    print("DDPG M9.3 CHECKPOINT EVALUATION")
     print("=" * 70)
     print(f"Checkpoint : {args.checkpoint}")
     print(f"Num envs   : {args.num_envs}")
@@ -132,9 +175,11 @@ def main():
 
     manager_env = env.unwrapped
 
+    print("DEBUG 1: before env.reset()", flush=True)
     obs, _ = env.reset(seed=args.seed)
+    print("DEBUG 2: after env.reset()", flush=True)
 
-    policy_obs = get_policy_obs(obs)
+    policy_obs = obs["policy"]
 
     obs_dim = policy_obs.shape[-1]
     action_dim = env.action_space.shape[-1]
@@ -142,12 +187,10 @@ def main():
     print(f"Observation dimension: {obs_dim}")
     print(f"Action dimension     : {action_dim}")
 
-    policy = load_policy(
-        args.checkpoint,
-        obs_dim,
-        action_dim,
-        device,
-    )
+    # Policy was loaded before Isaac Sim startup.
+    # Only move the already-loaded policy to CUDA here.
+    policy = preloaded_policy.to(device)
+    policy.eval()
 
     print("Checkpoint load: PASS")
 
@@ -201,11 +244,14 @@ def main():
     successes = []
     completion_steps = []
 
+    print("DEBUG 3: before evaluation loop", flush=True)
+
     for step in range(1, args.num_steps + 1):
+        print(f"DEBUG 4: step {step} start", flush=True)
 
         with torch.inference_mode():
 
-            policy_obs = get_policy_obs(obs)
+            policy_obs = obs["policy"]
 
             actions = policy.deterministic_action(
                 policy_obs
