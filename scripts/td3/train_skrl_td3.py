@@ -137,6 +137,12 @@ class SafeTD3(TD3):
         super().__init__(*args, **kwargs)
         self.safe_exploration_std = exploration_std
 
+        # The environment exposes an unbounded action space, while the
+        # TD3 actor outputs normalized actions through Tanh. Use finite
+        # bounds internally for TD3 target-policy smoothing.
+        self._min_actions = torch.full_like(self._min_actions, -1.0)
+        self._max_actions = torch.full_like(self._max_actions, 1.0)
+
     def act(self, observations, states, *, timestep, timesteps):
         inputs = {
             "observations": self._observation_preprocessor(observations),
