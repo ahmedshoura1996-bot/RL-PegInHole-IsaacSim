@@ -279,7 +279,7 @@ def main():
         grad_norm_clip=1.0,
         exploration_noise=None,
         policy_delay=2,
-        smooth_regularization_noise=SafeGaussianNoise,
+        smooth_regularization_noise=None,
         smooth_regularization_clip=0.5,
         experiment={
            "directory": LOG_DIR,
@@ -291,6 +291,17 @@ def main():
 
     print("DEBUG: before SafeTD3 construction", flush=True)
     print("DEBUG F: after TD3_CFG", flush=True)
+    print("DEBUG F1: cfg ready", flush=True)
+
+    import sys
+    import skrl.agents.torch.td3 as _td3_module
+
+    def _trace_td3(frame, event, arg):
+        if event == "line" and frame.f_code.co_filename == _td3_module.__file__:
+            print(f"[TRACE TD3] line {frame.f_lineno}", flush=True)
+        return _trace_td3
+
+    sys.settrace(_trace_td3)
 
     agent = SafeTD3(
         models=models,
