@@ -289,21 +289,12 @@ def main():
         },
     )
 
-    print("DEBUG: before SafeTD3 construction", flush=True)
+    print("DEBUG: before TD3 construction", flush=True)
     print("DEBUG F: after TD3_CFG", flush=True)
     print("DEBUG F1: cfg ready", flush=True)
 
-    import sys
-    import skrl.agents.torch.td3 as _td3_module
 
-    def _trace_td3(frame, event, arg):
-        if event == "line" and frame.f_code.co_filename == _td3_module.__file__:
-            print(f"[TRACE TD3] line {frame.f_lineno}", flush=True)
-        return _trace_td3
-
-    sys.settrace(_trace_td3)
-
-    agent = SafeTD3(
+    agent = TD3(
         models=models,
         memory=memory,
         observation_space=env.observation_space,
@@ -312,7 +303,7 @@ def main():
         cfg=td3_cfg,
     )
 
-    print("DEBUG: after SafeTD3 construction", flush=True)
+    print("DEBUG: after TD3 construction", flush=True)
 
     trainer_cfg = {
         "timesteps": args_cli.max_iterations,
